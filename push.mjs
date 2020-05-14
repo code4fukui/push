@@ -139,6 +139,9 @@ app.get('/*', (req, res) => {
     res.send(JSON.stringify({ res: 'ok', id: id, pass: newpass, lastUpdate: data.lastUpdate }))
     return
   }
+  const nq = url.indexOf('?')
+  if (nq >= 0) { url = url.substring(0, nq) }
+  console.log(url)
   if (url === '/' || url.indexOf('..') >= 0) {
     url = '/index.html'
   }
