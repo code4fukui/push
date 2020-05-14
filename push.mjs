@@ -69,56 +69,18 @@ const decodeID = function (pass) {
   return id
 }
 
-// import bodyParser from 'body-parser'
-// app.use(bodyParser.json())
-// app.post('/', multer({ dest: 'tmp/' }).single('file'), (req, res) => {
-/*
-app.post('/', (req, res) => {
-  res.header('Access-Control-Allow-Origin', '*')
-  res.header('Content-Type', 'application/json; charset=utf-8')
+const getList = function () {
+  const list = fs.readdirSync('data')
+  const res = []
+  for (const f of list) {
+    if (!f.endsWith('.json')) { continue }
+    const d = JSON.parse(fs.readFileSync('data/' + f, 'utf-8'))
+    const id = f.substring(0, f.length - 5)
+    res.push({ id: id, name: d.施設名 })
+  }
+  return res
+}
 
-  console.log(req)
-  console.log(req.body)
-  console.log(req.url)
-  const id = getID()
-  const pass = getPassCode(id)
-  res.send(JSON.stringify({ res: 'ok', id: id, pass: pass }))
-})
-*/
-app.get(SECPATH + '*', (req, res) => {
-  let fn = req.url.substring(SECPATH.length)
-  const qn = fn.lastIndexOf('?')
-  if (qn >= 0) {
-    fn = fn.substring(0, qn)
-  }
-  console.log(req.url, fn)
-  if (fn.indexOf('..') >= 0) {
-    res.header('Content-Type', 'text/html; charset=utf-8')
-    res.send('err')
-    return
-  }
-  if (fn.length == 0) {
-    const s = []
-    s.push(`<h2>COVID-19</h2>`)
-    try {
-      const list = fs.readdirSync('data/')
-      console.log(list)
-      for (const f of list) {
-        if (f.endsWith('.wav'))
-          s.push(`<a href=${f}>${f}</a>`)
-      }
-    } catch (e) {
-    }
-    s.push('')
-
-    res.header('Content-Type', 'text/html; charset=utf-8')
-    res.send(s.join('<br>'))
-  } else {
-    res.header('Content-Type', 'audio/wav')
-    const data = fs.readFileSync('data/' + fn)
-    res.send(data)
-  }
-})
 app.get('/*', (req, res) => {
   let url = req.url
   // console.log(req.query.data)
@@ -127,8 +89,13 @@ app.get('/*', (req, res) => {
     res.header('Content-Type', 'application/json; charset=utf-8')
     const id = parseInt(req.query.id)
     try {
-      const d = fs.readFileSync('data/' + id + '.json', 'utf-8')
-      res.send(d)
+      if (id > 0) {
+        const d = fs.readFileSync('data/' + id + '.json', 'utf-8')
+        res.send(d)
+      } else {
+        const list = getList()
+        res.send(JSON.stringify(list))
+      }
       return
     } catch (e) {
     }
@@ -144,7 +111,7 @@ app.get('/*', (req, res) => {
     data.lastUpdate = util.formatYMDHMS()
     const pass = data.パスコード
     delete data.パスコード
-    console.log(data, pass)
+    // console.log(data, pass)
     if (pass) {
       const id = decodeID(pass)
       try {
