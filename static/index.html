@@ -60,6 +60,22 @@ h1 a {
   padding-top: 0;
   padding: 1em;
 }
+/* main */
+.yn {
+  text-align: center;
+}
+.yn > div {
+  display: inline-block;
+  width: 30vw;
+  height: 10vh;
+  border: .5vw solid var(--main-color);
+  margin: 1vw;
+  padding: 1vw;
+  font-size: 3vw;
+  text-align: center;
+  line-height: 10vh;
+  background-color: #ccc;
+}
 input[type="text"], input[type="submit"], select, option {
 	-webkit-appearance: none;
 	-moz-appearance: none;
@@ -79,7 +95,7 @@ input[type="submit"] {
   padding: .2em 1em;
 }
 .lastUpdate {
-  margin-top: 1em;
+  margin: 1em 0em;
 }
 .opendata a {
   color: black !important;
@@ -111,20 +127,11 @@ input[type="submit"] {
 
   <div class=main>
     <form action="./" method="POST" onsubmit="return false">
-      <!--
-      <select name="type">
-        <option value="施設情報">施設情報</option>
-      </select>
-    -->
     <div>混雑状況</div>
-    <select name="type" id="混雑状況">
-      <option value="-">-</option>
-      <option value="空いている" style="background-color:#88f">○ 空いている</option>
-      <option value="混雑している" style="background-color:#f88">☓ 混雑している</option>
-    </select>
+    <div class=yn><div id=b1_0>混雑していない</div><div id=b1_1>混雑・入場規制など</div></div>
+    <div class=lastUpdate>更新日時：<span id=lastUpdate></span></div>
     <div id="inputs"></div>
       <input type="submit" id="btn" value="オープンデータ登録"><br>
-      <div class=lastUpdate>更新日時：<span id=lastUpdate></span></div>
       <div class=opendata>オープンデータリンク：<a id=opendataLink target=_blank></a></div>
     </form>
   </div>
@@ -150,6 +157,38 @@ for (const n of NAMES) {
     inp.placeholder = '登録前は未記入でOKです'
   }
   data.push(inp)
+}
+
+for (let j = 0; j < 2; j++) {
+  const i = 1
+  const name = 'b' + i + "_" + j
+  const c = document.getElementById(name)
+  c.no = j
+  c.setFlag = function(b) {
+    this.flg = b
+    this.style.backgroundColor = this.flg ? (this.no === 1 ? "#f77" : "#77f") : "#ccc"
+  }
+  c.onclick = function() {
+    this.setFlag(!this.flg)
+    if (this.flg) {
+      const n = this.id.match(/b(\d)_(\d)/)
+      for (let i = 0; i < 2; i++) {
+        if (i != n[2]) {
+          const name = 'b' + n[1] + "_" + i
+          document.getElementById(name).setFlag(false)
+        }
+      }
+    }
+    update()
+  }
+}
+const getFlag = function() {
+  for (let i = 0; i < 2; i++) {
+    const c = document.getElementById('b1_' + i)
+    if (c.flg)
+      return c.textContent
+  }
+  return '-'
 }
 
 const decodeID = function (pass) {
@@ -182,18 +221,26 @@ const first = async function () {
         inp.value = json[name]
       }
     }
-    if (json.混雑状況) {
-      混雑状況.value = json.混雑状況
+    const ctxt = json.混雑状況
+    if (ctxt) {
+      if (ctxt === '混雑していない') {
+        document.getElementById('b1_0').setFlag(true)
+        document.getElementById('b1_1').setFlag(false)
+      } else if (ctxt === '混雑・入場規制など') {
+        document.getElementById('b1_0').setFlag(false)
+        document.getElementById('b1_1').setFlag(true)
+      }
     }
     data[data.length - 1].value = pass
+    if (json.lastUpdate) { lastUpdate.textContent = json.lastUpdate }
     showLink(id)
   }
 }
 first()
 
-btn.onclick = async (e) => {
+const update = async () => {
   const body = {}
-  body.混雑状況 = 混雑状況.value
+  body.混雑状況 = getFlag()
   data.forEach(d => body[d.name] = d.value)
   console.log(body)
   //const res = await (await fetch('./', { method: 'GET', body: JSON.stringify(body) })).json()
@@ -213,6 +260,10 @@ btn.onclick = async (e) => {
   if (res.id) {
     showLink(res.id)
   }
+}
+
+btn.onclick = async () => {
+  await update()
   alert('登録しました')
   return false
 }
