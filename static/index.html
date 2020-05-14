@@ -81,6 +81,9 @@ input[type="submit"] {
 .lastUpdate {
   margin-top: 1em;
 }
+.opendata a {
+  color: black !important;
+}
 .footer {
   background-color: #e9bb00;
   border-top: .2vw solid beige;
@@ -122,11 +125,12 @@ input[type="submit"] {
     <div id="inputs"></div>
       <input type="submit" id="btn" value="オープンデータ登録"><br>
       <div class=lastUpdate>更新日時：<span id=lastUpdate></span></div>
+      <div class=opendata>オープンデータリンク：<a id=opendataLink target=_blank></a></div>
     </form>
   </div>
   
   <div class=footer>
-    APP: <a href=https://push.sabae.cc/>PUSH</a> CC BY <a href=https://twitter.com/taisukef>@taisukef</a> (<a href=https://github.com/code4sabae/push/>src on GitHub</a>)<br>
+    APP: <a href=https://push.sabae.cc/>PUSH</a> CC BY <a href=https://twitter.com/taisukef>@taisukef</a> (<a href=https://github.com/code4fukui/push/>src on GitHub</a>)<br>
     </div>
 </div>
 
@@ -159,11 +163,17 @@ const decodeID = function (pass) {
   return id
 }
 
+const showLink = function (id) {
+  const url = 'https://push.sabae.cc/?id=' + id
+  opendataLink.textContent = opendataLink.href = url
+}
+
 const first = async function () {
   const hash = document.location.hash
   if (hash.length > 1 && hash.startsWith('#admin=')) {
     const pass = hash.substring(7)
-    const url = './?id=' + decodeID(pass)
+    const id = decodeID(pass)
+    const url = './?id=' + id
     const json = await (await fetch(url)).json()
     for (const name in json) {
       console.log(name, json[name])
@@ -176,6 +186,7 @@ const first = async function () {
       混雑状況.value = json.混雑状況
     }
     data[data.length - 1].value = pass
+    showLink(id)
   }
 }
 first()
@@ -199,6 +210,9 @@ btn.onclick = async (e) => {
   }
   console.log(res.lastUpdate)
   if (res.lastUpdate) { lastUpdate.textContent = res.lastUpdate }
+  if (res.id) {
+    showLink(res.id)
+  }
   alert('登録しました')
   return false
 }
