@@ -147,12 +147,16 @@ app.get('/*', (req, res) => {
     console.log(data, pass)
     if (pass) {
       const id = decodeID(pass)
-      const chk = fs.readFileSync('data/' + id + '-pass.txt', 'utf-8')
-      console.log(chk)
-      if (chk === pass) {
-        fs.writeFileSync('data/' + id + '.json', JSON.stringify(data))
-        res.send(JSON.stringify({ res: 'ok', id: id, lastUpdate: data.lastUpdate }))
-        return
+      try {
+        const chk = fs.readFileSync('data/' + id + '-pass.txt', 'utf-8')
+        console.log(chk)
+        if (chk === pass) {
+          fs.writeFileSync('data/' + id + '.json', JSON.stringify(data))
+          res.send(JSON.stringify({ res: 'ok', id: id, lastUpdate: data.lastUpdate }))
+          return
+        }
+      } catch (e) {
+        console.log(e)
       }
     }
 
