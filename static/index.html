@@ -1,0 +1,209 @@
+<!DOCTYPE html><html lang="ja">
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta charset='utf-8'/>
+<title>PUSH かんたんオープンデータ</title>
+<!--<link rel="stylesheet" type="text/css" href="push.css"/>-->
+<style>
+body {
+  text-align: center;
+  font-family: sans-serif;
+  margin: 0;
+  padding: 0;
+  background-color: beige;
+}
+.header {
+  background-color: #e9bb00;
+  color: white;
+}
+h1 {
+  margin: 0;
+  padding: 1em 0 0 0;
+}
+h1 a {
+  x-color: #306090 !important;
+  color: white !important;
+  text-decoration: none;
+}
+.subtitle {
+  padding-top: 0;
+  padding: 1em;
+}
+.main {
+  text-align: left;
+  padding: 1.5em;
+  border: 1vw solid #e9bb00;
+  margin: 1.5em;
+  margin-bottom: 3em;
+}
+body {
+  text-align: center;
+  font-family: sans-serif;
+  margin: 0;
+  padding: 0;
+  background-color: beige;
+}
+.header {
+  background-color: #e9bb00;
+  color: white;
+}
+h1 {
+  margin: 0;
+  padding: 1em 0 0 0;
+}
+h1 a {
+  x-color: #306090 !important;
+  color: white !important;
+  text-decoration: none;
+}
+.subtitle {
+  padding-top: 0;
+  padding: 1em;
+}
+input[type="text"], input[type="submit"], select, option {
+	-webkit-appearance: none;
+	-moz-appearance: none;
+  appearance: none;
+  
+  font-size: 120%;
+  margin-bottom: .3em;
+  border: .1vw solid #333;
+  padding: .2em .5em;
+  box-sizing: border-box;
+}
+input[type="text"] {
+  width: 100%;
+}
+input[type="submit"] {
+  margin-top: 1em;
+  padding: .2em 1em;
+}
+.lastUpdate {
+  margin-top: 1em;
+}
+.footer {
+  background-color: #e9bb00;
+  border-top: .2vw solid beige;
+  position: fixed;
+  text-align: center;
+  bottom: 0;
+  width: 100%;
+  padding: .5em 0 0.5em 0;
+  font-size: 80%;
+  color: white;
+}
+.footer a {
+  color: white !important;
+}
+</style>
+</head>
+<body>
+
+<div id='contents'>
+  <div class=header>
+    <h1><a href=https://push.sabae.cc/>PUSH かんたんオープンデータ</a></h1>
+    <div class=subtitle>オープンデータ化したい項目を書いて登録するだけ！<br>
+      自分だけのURLが生成され、いつでも更新できます</div>
+  </div>
+
+  <div class=main>
+    <form action="./" method="POST" onsubmit="return false">
+      <!--
+      <select name="type">
+        <option value="施設情報">施設情報</option>
+      </select>
+    -->
+    <div>混雑状況</div>
+    <select name="type" id="混雑状況">
+      <option value="-">-</option>
+      <option value="空いている" style="background-color:#88f">○ 空いている</option>
+      <option value="混雑している" style="background-color:#f88">☓ 混雑している</option>
+    </select>
+    <div id="inputs"></div>
+      <input type="submit" id="btn" value="オープンデータ登録"><br>
+      <div class=lastUpdate>更新日時：<span id=lastUpdate></span></div>
+    </form>
+  </div>
+  
+  <div class=footer>
+    APP: <a href=https://push.sabae.cc/>PUSH</a> CC BY <a href=https://twitter.com/taisukef>@taisukef</a> (<a href=https://github.com/code4sabae/push/>src on GitHub</a>)<br>
+    </div>
+</div>
+
+<script type='module'>
+
+const NAMES = ['施設名', '休館日', '臨時営業日', '臨時休館日', '平日開館時間', '休日開館時間', '入館可能時間', '備考', 'パスコード']
+const data = []
+for (const n of NAMES) {
+  const div = document.createElement('div')
+  div.textContent = n
+  inputs.appendChild(div)
+  const inp = document.createElement('input')
+  inp.type = 'text'
+  inp.name = n
+  inputs.appendChild(inp)
+  if (n === 'パスコード') {
+    inp.placeholder = '登録前は未記入でOKです'
+  }
+  data.push(inp)
+}
+
+const decodeID = function (pass) {
+  let id = 0
+  const n = pass.split('-')
+  let m = 1
+  for (let i = 6; i < n.length; i++) {
+    id = parseInt(n[i]) * m
+    m *= 10000
+  }
+  return id
+}
+
+const first = async function () {
+  const hash = document.location.hash
+  if (hash.length > 1 && hash.startsWith('#admin=')) {
+    const pass = hash.substring(7)
+    const url = './?id=' + decodeID(pass)
+    const json = await (await fetch(url)).json()
+    for (const name in json) {
+      console.log(name, json[name])
+      const inp = data.find(d => d.name == name)
+      if (inp) {
+        inp.value = json[name]
+      }
+    }
+    if (json.混雑状況) {
+      混雑状況.value = json.混雑状況
+    }
+    data[data.length - 1].value = pass
+  }
+}
+first()
+
+btn.onclick = async (e) => {
+  const body = {}
+  body.混雑状況 = 混雑状況.value
+  data.forEach(d => body[d.name] = d.value)
+  console.log(body)
+  //const res = await (await fetch('./', { method: 'GET', body: JSON.stringify(body) })).json()
+  const sjson = JSON.stringify(body)
+  console.log(sjson)
+  const url = './?data=' + encodeURIComponent(sjson)
+  console.log(url)
+  const res = await (await fetch(url)).json()
+  console.log(res)
+  //alert(res.id, res.pass)
+  if (res.pass) {
+    data[data.length - 1].value = res.pass
+    document.location.hash = 'admin=' + res.pass
+  }
+  console.log(res.lastUpdate)
+  if (res.lastUpdate) { lastUpdate.textContent = res.lastUpdate }
+  alert('登録しました')
+  return false
+}
+
+</script>
+
+</body>
+</html>
