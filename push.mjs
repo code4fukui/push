@@ -36,12 +36,15 @@ const log = function (req, name, json) {
 }
 
 const fnid = 'data/id.txt'
-const getID = function () {
-  let id = 0
+const getLastID = function () {
   try {
-    id = parseInt(fs.readFileSync(fnid, 'utf-8'))
+    return parseInt(fs.readFileSync(fnid, 'utf-8'))
   } catch (e) {
   }
+  return 1
+}
+const getID = function () {
+  let id = getLastID()
   id++
   fs.writeFileSync(fnid, id.toString(), 'utf-8')
   return id
@@ -88,7 +91,17 @@ const getList = function () {
 }
 
 const getDataJSON = function (id) {
-  return JSON.parse(fs.readFileSync('data/' + id + '.json', 'utf-8'))
+  try {
+    const json = JSON.parse(fs.readFileSync('data/' + id + '.json', 'utf-8'))
+    if (!json.id) { json.id = id }
+    return json
+  } catch (e) {
+  }
+  return null
+}
+const updateDataJSON = function (json) {
+  if (!json.id) { return false }
+  fs.writeFileSync('data/' + json.id + '.json', JSON.stringify(json), 'utf-8')
 }
 
 app.get('/*', (req, res) => {
@@ -142,6 +155,7 @@ app.get('/*', (req, res) => {
     // console.log(req.body)
     console.log(req.url)
     const id = getID()
+    data.id = id
     const newpass = getPassCode(id)
     console.log(id, newpass)
     fs.writeFileSync('data/' + id + '-pass.txt', newpass)
@@ -219,4 +233,15 @@ app.listen(PORT, () => {
   console.log('edit .env if you want to change')
   console.log()
   console.log('https://github.com/code4fukui/push/')
+
+  // data normalize
+  const last = getLastID()
+  for (let i = 1; i <= last; i++) {
+    const d = getDataJSON(i)
+    if (!d) { continue }
+    d.臨時開館日 = d.臨時営業日
+    delete d.臨時営業日
+    console.log(i, d)
+    updateDataJSON(d)
+  }
 })
