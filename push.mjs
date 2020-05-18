@@ -88,7 +88,7 @@ const getList = function () {
 }
 
 const getDataJSON = function (id) {
-  return fs.readFileSync('data/' + id + '.json', 'utf-8')
+  return JSON.parse(fs.readFileSync('data/' + id + '.json', 'utf-8'))
 }
 
 app.get('/*', (req, res) => {
