@@ -5,7 +5,6 @@ import util from './util.mjs'
 import dotenv from 'dotenv'
 dotenv.config()
 
-const SECPATH = process.env.SECPATH || '/uploaded/'
 const PORT = process.env.PORT || 8006
 
 const app = express()
@@ -28,6 +27,13 @@ const getIP = function (req) {
 const encodeIP = function (ip) {
   return ip.replace(/\.|:/g, '_')
 }
+const getEncodedIP = function (req) {
+  return encodeIP(getIP(req))
+}
+const log = function (req, name, json) {
+  json.ip = getEncodedIP(req)
+  fs.appendFileSync('log/' + util.getYMD() + '-' + name + '.log', JSON.stringify(json))
+}
 
 const fnid = 'data/id.txt'
 const getID = function () {
@@ -37,7 +43,7 @@ const getID = function () {
   } catch (e) {
   }
   id++
-  fs.writeFileSync(fnid, id, 'utf-8')
+  fs.writeFileSync(fnid, id.toString(), 'utf-8')
   return id
 }
 const getPassCode = function (id) {
@@ -81,6 +87,10 @@ const getList = function () {
   return res
 }
 
+const getDataJSON = function (id) {
+  return fs.readFileSync('data/' + id + '.json', 'utf-8')
+}
+
 app.get('/*', (req, res) => {
   let url = req.url
   // console.log(req.query.data)
@@ -90,7 +100,7 @@ app.get('/*', (req, res) => {
     const id = parseInt(req.query.id)
     try {
       if (id > 0) {
-        const d = fs.readFileSync('data/' + id + '.json', 'utf-8')
+        const d = getDataJSON(id)
         res.send(d)
       } else {
         const list = getList()
@@ -119,6 +129,7 @@ app.get('/*', (req, res) => {
         console.log(chk)
         if (chk === pass) {
           fs.writeFileSync('data/' + id + '.json', JSON.stringify(data))
+          log(req, 'update', data)
           res.send(JSON.stringify({ res: 'ok', id: id, lastUpdate: data.lastUpdate }))
           return
         }
@@ -135,6 +146,7 @@ app.get('/*', (req, res) => {
     console.log(id, newpass)
     fs.writeFileSync('data/' + id + '-pass.txt', newpass)
     fs.writeFileSync('data/' + id + '.json', JSON.stringify(data))
+    log(req, 'regist', data)
 
     res.send(JSON.stringify({ res: 'ok', id: id, pass: newpass, lastUpdate: data.lastUpdate }))
     return
@@ -142,6 +154,42 @@ app.get('/*', (req, res) => {
   const nq = url.indexOf('?')
   if (nq >= 0) { url = url.substring(0, nq) }
   console.log(url)
+
+  // id毎のページ
+  const idx = parseInt(url.substring(1))
+  if (idx > 0) {
+    let n = url.lastIndexOf('.')
+    const ext = n < 0 ? 'html' : url.substring(n + 1)
+    console.log(idx, url, ext)
+    n = n < 0 ? n.length : n
+    const ids = url.substring(1, n).split(',')
+    console.log(ids)
+    const data = []
+    for (const id of ids) {
+      try {
+        const d = getDataJSON(id)
+        data.push(d)
+      } catch (e) {
+      }
+    }
+    if (data.length === 0) {
+      data.push({ err: 'not found' })
+    }
+    if (ext === 'json') {
+      res.header('Access-Control-Allow-Origin', '*')
+      res.header('Content-Type', 'application/json; charset=utf-8')
+      res.send(JSON.stringify(data))
+    } else if (ext === 'csv') {
+      res.header('Access-Control-Allow-Origin', '*')
+      res.header('Content-Type', 'text/csv; charset=utf-8')
+      res.send(util.addBOM(util.encodeCSV(util.json2csv(data))))
+    } else if (ext === 'html') {
+      res.header('Content-Type', 'text/html; charset=utf-8')
+      res.send(JSON.stringify(data))
+    }
+    return
+  }
+
   if (url === '/' || url.indexOf('..') >= 0) {
     url = '/index.html'
   }

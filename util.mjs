@@ -554,6 +554,27 @@ exports.decodeCSV = function (s) {
   }
   return res
 }
+exports.encodeCSV = function (csvar) {
+  const s = []
+  for (let i = 0; i < csvar.length; i++) {
+    const s2 = []
+    const line = csvar[i]
+    for (let j = 0; j < line.length; j++) {
+      const v = line[j]
+      if (v === undefined || v === null || v.length === 0) {
+        s2.push('')
+      } else if (typeof v === 'number') {
+        s2.push(v)
+      } else if (v.indexOf('"') >= 0) {
+        s2.push('"' + v.replace(/"/g, '""') + '"')
+      } else {
+        s2.push('"' + v + '"')
+      }
+    }
+    s.push(s2.join(','))
+  }
+  return s.join('\n')
+}
 exports.csv2json = function (csv) {
   const res = []
   const head = csv[0]
@@ -562,9 +583,9 @@ exports.csv2json = function (csv) {
     const n = h.indexOf('(')
     const m = h.indexOf('（')
     let l = -1
-    if (n == -1) {
+    if (n === -1) {
       l = m
-    } else if (m == -1) {
+    } else if (m === -1) {
       l = n
     } else {
       l = Math.min(n, m)
@@ -577,6 +598,33 @@ exports.csv2json = function (csv) {
       d[head[j]] = csv[i][j]
     }
     res.push(d)
+  }
+  return res
+}
+exports.json2csv = function (json) {
+  if (!Array.isArray(json)) {
+    throw new Error('is not array! at json2csv')
+  }
+  const head = []
+  for (const d of json) {
+    for (const name in d) {
+      if (head.indexOf(name) === -1) {
+        head.push(name)
+      }
+    }
+  }
+  const res = [head]
+  for (const d of json) {
+    const line = []
+    for (let i = 0; i < head.length; i++) {
+      const v = d[head[i]]
+      if (v === undefined || v === null) {
+        line.push('')
+      } else {
+        line.push(v)
+      }
+    }
+    res.push(line)
   }
   return res
 }
@@ -602,18 +650,29 @@ exports.fix0 = function (n, beam) {
   return s.substring(s.length - beam)
 }
 exports.formatYMDHMS = function (t) {
-  if (!t) {
-    t = new Date()
-  }
+  if (!t) { t = new Date() }
   const fix0 = exports.fix0
   return t.getFullYear() + "-" + fix0(t.getMonth() + 1, 2) + "-" + fix0(t.getDate(), 2) + "T" + fix0(t.getHours(), 2) + ":" + fix0(t.getMinutes(), 2) + ":" + fix0(t.getSeconds(), 2)
 }
 exports.formatYMD = function (t) {
-  if (!t) {
-    t = new Date()
-  }
+  if (!t) { t = new Date() }
   const fix0 = exports.fix0
   return t.getFullYear() + "-" + fix0(t.getMonth() + 1, 2) + "-" + fix0(t.getDate(), 2)
+}
+exports.getYMDHMS = function (t) {
+  if (!t) { t = new Date() }
+  const fix0 = exports.fix0
+  return t.getFullYear() + fix0(t.getMonth() + 1, 2) + fix0(t.getDate(), 2) + fix0(t.getHours(), 2) + fix0(t.getMinutes(), 2) + fix0(t.getSeconds(), 2)
+}
+exports.getYMDH = function (t) {
+  if (!t) { t = new Date() }
+  const fix0 = exports.fix0
+  return t.getFullYear() + fix0(t.getMonth() + 1, 2) + fix0(t.getDate(), 2) + fix0(t.getHours(), 2)
+}
+exports.getYMD = function (t) {
+  if (!t) { t = new Date() }
+  const fix0 = exports.fix0
+  return t.getFullYear() + fix0(t.getMonth() + 1, 2) + fix0(t.getDate(), 2)
 }
 exports.addBOM = function (s) {
   return '\ufeff' + s
