@@ -1,0 +1,25 @@
+<!DOCTYPE html><html lang="ja">
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta charset='utf-8'/>
+<title>${title} オープンデータ</title>
+<link rel="stylesheet" type="text/css" href="view.css"/>
+</head>
+<body>
+
+<div id='contents'>
+  <div class=header>
+    <h1>${title} オープンデータ</h1>
+    <div class=subtitle>店舗からの一次情報がリアルタイムに反映されます</div>
+  </div>
+
+  <div class=main>${data}</div>
+  
+  <div class=footer>
+    <div>DATA: ${title} オープンデータ <a href="${id}.csv">CSV</a> / <a href="${id}.json">JSON</a><div>
+    <div>APP: <a href=https://push.sabae.cc/>PUSH</a> CC BY <a href=https://twitter.com/taisukef>@taisukef</a> (<a href=https://github.com/code4fukui/push/>src on GitHub</a>)</div>
+  </div>
+</div>
+
+</body>
+</html>

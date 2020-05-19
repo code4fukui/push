@@ -199,7 +199,23 @@ app.get('/*', (req, res) => {
       res.send(util.addBOM(util.encodeCSV(util.json2csv(data))))
     } else if (ext === 'html') {
       res.header('Content-Type', 'text/html; charset=utf-8')
-      res.send(JSON.stringify(data))
+      const title = data.map(d => d.施設名 || d.店舗名).join('、')
+      const ids = data.map(d => d.id).join(',')
+      const ss = []
+      for (const d of data) {
+        ss.push('<table>')
+        for (const item in d) {
+          ss.push(`<tr><th>${item}</th><td>${d[item]}</td></tr>`)
+        }
+        ss.push('</table>')
+      }
+      const sdata = ss.join('\n')
+      // console.log(data)
+      let template = fs.readFileSync('static/view_template.html', 'utf-8')
+      template = template.replace(/\${title}/g, title)
+      template = template.replace(/\${id}/g, ids)
+      template = template.replace(/\${data}/g, sdata)
+      res.send(template)
     }
     return
   }
@@ -235,6 +251,7 @@ app.listen(PORT, () => {
   console.log('https://github.com/code4fukui/push/')
 
   // data normalize
+  /*
   const last = getLastID()
   for (let i = 1; i <= last; i++) {
     const d = getDataJSON(i)
@@ -244,4 +261,5 @@ app.listen(PORT, () => {
     console.log(i, d)
     updateDataJSON(d)
   }
+  */
 })

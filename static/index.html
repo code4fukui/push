@@ -30,6 +30,10 @@ h1 a {
   padding-top: 0;
   padding: 1em;
 }
+.header a {
+  color: white !important;
+}
+/* main */
 .main {
   text-align: left;
   padding: 1.5em;
@@ -102,7 +106,7 @@ input[type="submit"] {
   <div class=header>
     <h1><a href=https://push.sabae.cc/>PUSH かんたんオープンデータ</a></h1>
     <div class=subtitle>オープンデータ化したい項目を書いて登録するだけ！<br>
-      自分だけのURLが生成され、いつでも更新できます</div>
+      自分だけのURLが生成され、いつでも更新できます（<a href='./'>施設</a> or <a href='./#type=store'>店舗</a>）</div>
   </div>
 
   <div class=main>
@@ -123,22 +127,46 @@ input[type="submit"] {
 
 <script type='module'>
 
-const NAMES = ['施設名', '休館日', '臨時開館日', '臨時休館日', '平日開館時間', '休日開館時間', '入館可能時間', '年末年始', 'URL', '備考', 'パスコード']
-const data = []
-for (const n of NAMES) {
-  const div = document.createElement('div')
-  div.textContent = n
-  inputs.appendChild(div)
-  const inp = document.createElement('input')
-  inp.type = 'text'
-  inp.name = n
-  inp.maxLength = 255
-  inputs.appendChild(inp)
-  if (n === 'パスコード') {
-    inp.placeholder = '登録前は未記入でOKです'
-  }
-  data.push(inp)
+const TYPES = {
+  facility: ['施設名', '休館日', '臨時開館日', '臨時休館日', '平日開館時間', '休日開館時間', '入館可能時間', '年末年始', 'URL', '備考'],
+  store: ['店舗名', '定休日', '営業時間', 'お店から一言', 'URL', '備考'],
 }
+
+let data = []
+const makeInputs = function (names) {
+  data = []
+  inputs.innerHTML = ''
+  const names2 = names.filter(n => true)
+  names2.push('パスコード')
+  for (const n of names2) {
+    const div = document.createElement('div')
+    div.textContent = n
+    inputs.appendChild(div)
+    const inp = document.createElement('input')
+    inp.type = 'text'
+    inp.name = n
+    inp.maxLength = 255
+    inputs.appendChild(inp)
+    if (n === 'パスコード') {
+      inp.placeholder = '登録前は未記入でOKです'
+    }
+    data.push(inp)
+  }
+}
+
+let type = 'facility'
+const showTypeByHash = function () {
+  let rtype = document.location.hash.match(/type=([^&]+)/)
+  if (rtype) {
+    type = rtype[1]
+  }
+  console.log(type)
+  makeInputs(TYPES[type])
+}
+window.onhashchange = function () {
+  showTypeByHash()
+}
+showTypeByHash()
 
 for (let j = 0; j < 2; j++) {
   const i = 1
@@ -195,6 +223,8 @@ const first = async function () {
     const id = decodeID(pass)
     const url = './?id=' + id
     const json = await (await fetch(url)).json()
+    type = json.type || 'facility'
+    makeInputs(TYPES[type])
     for (const name in json) {
       console.log(name, json[name])
       const inp = data.find(d => d.name == name)
@@ -223,6 +253,7 @@ const update = async () => {
   const body = {}
   body.混雑状況 = getFlag()
   data.forEach(d => body[d.name] = d.value)
+  body.type = type
   console.log(body)
   //const res = await (await fetch('./', { method: 'GET', body: JSON.stringify(body) })).json()
   const sjson = JSON.stringify(body)
