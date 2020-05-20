@@ -192,7 +192,11 @@ app.get('/*', (req, res) => {
     if (ext === 'json') {
       res.header('Access-Control-Allow-Origin', '*')
       res.header('Content-Type', 'application/json; charset=utf-8')
-      res.send(JSON.stringify(data))
+      if (data.length === 1) {
+        res.send(JSON.stringify(data[0]))
+      } else {
+        res.send(JSON.stringify(data))
+      }
     } else if (ext === 'csv') {
       res.header('Access-Control-Allow-Origin', '*')
       res.header('Content-Type', 'text/csv; charset=utf-8')
