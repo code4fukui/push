@@ -199,13 +199,21 @@ app.get('/*', (req, res) => {
       res.send(util.addBOM(util.encodeCSV(util.json2csv(data))))
     } else if (ext === 'html') {
       res.header('Content-Type', 'text/html; charset=utf-8')
-      const title = data.map(d => d.施設名 || d.店舗名).join('、')
+      if (data.length === 1 && !data[0]) {
+        res.send('data not found')
+        return
+      }
+      const title = data.map(d => d['施設名'] || d['店舗名'] || '').join('、')
       const ids = data.map(d => d.id).join(',')
       const ss = []
       for (const d of data) {
         ss.push('<table>')
         for (const item in d) {
-          ss.push(`<tr><th>${item}</th><td>${d[item]}</td></tr>`)
+          let val = d[item]
+          if (typeof val === 'string' && (val.startsWith('https://') || val.startsWith('https://'))) {
+            val = `<a href='${val}'>${val}</a>`
+          }
+          ss.push(`<tr><th>${item}</th><td>${val}</td></tr>`)
         }
         ss.push('</table>')
       }

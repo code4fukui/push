@@ -106,7 +106,7 @@ input[type="submit"] {
   <div class=header>
     <h1><a href=https://push.sabae.cc/>PUSH かんたんオープンデータ</a></h1>
     <div class=subtitle>オープンデータ化したい項目を書いて登録するだけ！<br>
-      自分だけのURLが生成され、いつでも更新できます（<a href='./'>施設</a> or <a href='./#type=store'>店舗</a>）</div>
+      自分だけのURLが生成され、いつでも更新できます（<a href='./#type=facility'>施設</a> or <a href='./#type=store'>店舗</a>）</div>
   </div>
 
   <div class=main>
@@ -136,6 +136,10 @@ let data = []
 const makeInputs = function (names) {
   data = []
   inputs.innerHTML = ''
+  lastUpdate.textContent = ''
+  document.getElementById('b1_0').setFlag(false)
+  document.getElementById('b1_1').setFlag(false)
+
   const names2 = names.filter(n => true)
   names2.push('パスコード')
   for (const n of names2) {
@@ -154,19 +158,6 @@ const makeInputs = function (names) {
   }
 }
 
-let type = 'facility'
-const showTypeByHash = function () {
-  let rtype = document.location.hash.match(/type=([^&]+)/)
-  if (rtype) {
-    type = rtype[1]
-  }
-  console.log(type)
-  makeInputs(TYPES[type])
-}
-window.onhashchange = function () {
-  showTypeByHash()
-}
-showTypeByHash()
 
 for (let j = 0; j < 2; j++) {
   const i = 1
@@ -200,6 +191,34 @@ const getFlag = function() {
   return '-'
 }
 
+//
+const DEFAULT_TYPE = 'facility'
+const getTypeByHash = function () {
+  let rtype = document.location.hash.match(/type=([^&]+)/)
+  if (rtype) {
+    rtype = rtype[1]
+  }
+  return rtype
+}
+const showTypeByHash = function () {
+  const rtype = getTypeByHash() || DEFAULT_TYPE
+  if (rtype !== type) {
+    type = rtype
+    makeInputs(TYPES[type])
+  }
+}
+
+window.onhashchange = function () {
+  console.log(window.location.hash)
+  showTypeByHash()
+}
+
+let type = getTypeByHash() || DEFAULT_TYPE
+console.log(type)
+makeInputs(TYPES[type])
+
+//
+
 const decodeID = function (pass) {
   let id = 0
   const n = pass.split('-')
@@ -218,8 +237,8 @@ const showLink = function (id) {
 
 const first = async function () {
   const hash = document.location.hash
-  if (hash.length > 1 && hash.startsWith('#admin=')) {
-    const pass = hash.substring(7)
+  if (hash.length > 1 && hash.indexOf('admin=') >= 0) {
+    const pass = hash.match(/admin=([\d-]+)/)[1]
     const id = decodeID(pass)
     const url = './?id=' + id
     const json = await (await fetch(url)).json()
@@ -262,10 +281,11 @@ const update = async () => {
   console.log(url)
   const res = await (await fetch(url)).json()
   console.log(res)
-  //alert(res.id, res.pass)
   if (res.pass) {
+    console.log(res.pass)
     data[data.length - 1].value = res.pass
-    document.location.hash = 'admin=' + res.pass
+    console.log(data[data.length - 1].value)
+    document.location.hash = (type !== DEFAULT_TYPE ? 'type=' + type + '&' : '') + 'admin=' + res.pass
   }
   console.log(res.lastUpdate)
   if (res.lastUpdate) { lastUpdate.textContent = res.lastUpdate }
