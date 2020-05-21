@@ -106,15 +106,17 @@ input[type="submit"] {
   <div class=header>
     <h1><a href=https://push.sabae.cc/>PUSH かんたんオープンデータ</a></h1>
     <div class=subtitle>オープンデータ化したい項目を書いて登録するだけ！<br>
-      自分だけのURLが生成され、いつでも更新できます（<a href='./#type=facility'>施設</a> or <a href='./#type=store'>店舗</a>）</div>
+      自分だけのURLが生成され、いつでも更新できます（<a href='./#type=facility'>施設</a> / <a href='./#type=store'>店舗</a> / <a href='./#type=container'>集約</a>）</div>
   </div>
 
   <div class=main>
     <form action="./" method="POST" onsubmit="return false">
-    <div>混雑状況</div>
-    <div class=yn><div id=b1_0>混雑していない</div><div id=b1_1>混雑・入場規制など</div></div>
-    <div class=lastUpdate>更新日時：<span id=lastUpdate></span></div>
-    <div id="inputs"></div>
+      <div id="divStatus">
+        <div>混雑状況</div>
+        <div class=yn><div id=b1_0>混雑していない</div><div id=b1_1>混雑・入場規制など</div></div>
+      </div>
+      <div class=lastUpdate>更新日時：<span id=lastUpdate></span></div>
+      <div id="inputs"></div>
       <input type="submit" id="btn" value="オープンデータ登録"><br>
       <div class=opendata>オープンデータリンク：<a id=opendataLink target=_blank></a></div>
     </form>
@@ -130,16 +132,20 @@ input[type="submit"] {
 const TYPES = {
   facility: ['施設名', '休館日', '臨時開館日', '臨時休館日', '平日開館時間', '休日開館時間', '入館可能時間', '年末年始', 'URL', '備考'],
   store: ['店舗名', '定休日', '営業時間', 'お店から一言', 'URL', '備考'],
+  container: ['集約名', 'IDs', '備考'],
 }
+const NO_STATUS_TYPES = [ 'container' ]
 
 let data = []
-const makeInputs = function (names) {
+const makeInputs = function () {
+  const names = TYPES[type]
   data = []
   inputs.innerHTML = ''
   lastUpdate.textContent = ''
   document.getElementById('b1_0').setFlag(false)
   document.getElementById('b1_1').setFlag(false)
-
+  divStatus.style.visibility = NO_STATUS_TYPES.indexOf(type) >= 0 ? 'hidden' : 'visible'
+  
   const names2 = names.filter(n => true)
   names2.push('パスコード')
   for (const n of names2) {
@@ -204,7 +210,7 @@ const showTypeByHash = function () {
   const rtype = getTypeByHash() || DEFAULT_TYPE
   if (rtype !== type) {
     type = rtype
-    makeInputs(TYPES[type])
+    makeInputs()
   }
 }
 
@@ -215,7 +221,7 @@ window.onhashchange = function () {
 
 let type = getTypeByHash() || DEFAULT_TYPE
 console.log(type)
-makeInputs(TYPES[type])
+makeInputs()
 
 //
 
@@ -231,7 +237,7 @@ const decodeID = function (pass) {
 }
 
 const showLink = function (id) {
-  const url = 'https://push.sabae.cc/?id=' + id
+  const url = 'https://push.sabae.cc/' + id
   opendataLink.textContent = opendataLink.href = url
 }
 

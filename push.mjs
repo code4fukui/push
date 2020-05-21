@@ -85,8 +85,12 @@ const getList = function () {
     if (!f.endsWith('.json')) { continue }
     const d = JSON.parse(fs.readFileSync('data/' + f, 'utf-8'))
     const id = f.substring(0, f.length - 5)
-    res.push({ id: id, name: d.施設名 })
+    const name = d['施設名'] || d['店舗名'] || d['集約名']
+    res.push({ id: id, type: d.type, name: name, lastUpdate: d.lastUpdate })
   }
+  // const key = d => new Date(d.lasatUpdate).getTime()
+  const key = d => -parseInt(d.id)
+  res.sort((a, b) => key(a) - key(b))
   return res
 }
 
@@ -174,41 +178,27 @@ app.get('/*', (req, res) => {
   if (idx > 0) {
     let n = url.lastIndexOf('.')
     const ext = n < 0 ? 'html' : url.substring(n + 1)
-    console.log(idx, url, ext)
+    // console.log(idx, url, ext)
     n = n < 0 ? n.length : n
     const ids = url.substring(1, n).split(',')
-    console.log(ids)
-    const data = []
-    for (const id of ids) {
-      try {
-        const d = getDataJSON(id)
-        data.push(d)
-      } catch (e) {
+
+    if (ext === 'html') {
+      const data = []
+      for (const id of ids) {
+        try {
+          const d = getDataJSON(id)
+          data.push(d)
+        } catch (e) {
+        }
       }
-    }
-    if (data.length === 0) {
-      data.push({ err: 'not found' })
-    }
-    if (ext === 'json') {
-      res.header('Access-Control-Allow-Origin', '*')
-      res.header('Content-Type', 'application/json; charset=utf-8')
-      if (data.length === 1) {
-        res.send(JSON.stringify(data[0]))
-      } else {
-        res.send(JSON.stringify(data))
-      }
-    } else if (ext === 'csv') {
-      res.header('Access-Control-Allow-Origin', '*')
-      res.header('Content-Type', 'text/csv; charset=utf-8')
-      res.send(util.addBOM(util.encodeCSV(util.json2csv(data))))
-    } else if (ext === 'html') {
+
       res.header('Content-Type', 'text/html; charset=utf-8')
-      if (data.length === 1 && !data[0]) {
+      if (data.length === 0) {
         res.send('data not found')
         return
       }
       const title = data.map(d => d['施設名'] || d['店舗名'] || '').join('、')
-      const ids = data.map(d => d.id).join(',')
+      const ids2 = data.map(d => d.id).join(',')
       const ss = []
       for (const d of data) {
         ss.push('<table>')
@@ -225,9 +215,49 @@ app.get('/*', (req, res) => {
       // console.log(data)
       let template = fs.readFileSync('static/view_template.html', 'utf-8')
       template = template.replace(/\${title}/g, title)
-      template = template.replace(/\${id}/g, ids)
+      template = template.replace(/\${id}/g, ids2)
       template = template.replace(/\${data}/g, sdata)
       res.send(template)
+      return
+    }
+
+    const dataids = []
+    const data = []
+    const gatherData = function (ids) {
+      for (const id of ids) {
+        if (dataids.indexOf(id) >= 0) { continue }
+        try {
+          dataids.push(id)
+          const d = getDataJSON(id)
+          if (d.type !== 'container') {
+            data.push(d)
+          } else {
+            const ids2 = d.IDs.split(',').map(d => d.trim())
+            gatherData(ids2)
+          }
+        } catch (e) {
+        }
+      }
+    }
+    gatherData(ids)
+
+    if (data.length === 0) {
+      data.push({ err: 'not found' })
+    }
+    if (ext === 'json') {
+      res.header('Access-Control-Allow-Origin', '*')
+      res.header('Content-Type', 'application/json; charset=utf-8')
+      if (data.length === 1) {
+        res.send(JSON.stringify(data[0]))
+      } else {
+        res.send(JSON.stringify(data))
+      }
+    } else if (ext === 'csv') {
+      res.header('Access-Control-Allow-Origin', '*')
+      res.header('Content-Type', 'text/csv; charset=utf-8')
+      res.send(util.addBOM(util.encodeCSV(util.json2csv(data))))
+    } else {
+      res.send('data not found')
     }
     return
   }
