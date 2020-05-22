@@ -197,7 +197,7 @@ app.get('/*', (req, res) => {
         res.send('data not found')
         return
       }
-      const title = data.map(d => d['施設名'] || d['店舗名'] || '').join('、')
+      const title = data.map(d => d['施設名'] || d['店舗名'] || d['集約名'] || '').join('、')
       const ids2 = data.map(d => d.id).join(',')
       const ss = []
       for (const d of data) {
