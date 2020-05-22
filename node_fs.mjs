@@ -17,7 +17,8 @@ fs.appendFileSync = function (fn, s) {
 fs.readdirSync = function (dirn) {
   return Deno.readDirSync(dirn)
 }
-
-console.log(fs.readFileSync('node_fs.mjs'))
+fs.mkdirSync = function (dirn) {
+  return Deno.mkdirSync(dirn)
+}
 
 export default fs
