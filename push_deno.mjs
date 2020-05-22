@@ -1,7 +1,7 @@
 import fs from './node_fs.mjs'
 import { serve } from "https://deno.land/std@0.50.0/http/server.ts"
 import util from './util.mjs'
-import "https://deno.land/x/dotenv/load.ts";
+//import "https://deno.land/x/dotenv/load.ts";
 
 const PORT = parseInt(Deno.env.get('PORT')) || 8006
 
