@@ -106,7 +106,7 @@ input[type="submit"] {
   <div class=header>
     <h1><a href=https://push.sabae.cc/>PUSH かんたんオープンデータ</a></h1>
     <div class=subtitle>オープンデータ化したい項目を書いて登録するだけ！<br>
-      自分だけのURLが生成され、いつでも更新できます（<a href='./#type=facility'>施設</a> / <a href='./#type=store'>店舗</a> / <a href='./#type=container'>集約</a>）</div>
+      自分だけのURLが生成され、いつでも更新できます（<span id=types></span>）</div>
   </div>
 
   <div class=main>
@@ -129,22 +129,23 @@ input[type="submit"] {
 
 <script type='module'>
 
-const TYPES = {
-  facility: ['施設名', '休館日', '臨時開館日', '臨時休館日', '平日開館時間', '休日開館時間', '入館可能時間', '年末年始', 'URL', '備考'],
-  store: ['店舗名', '定休日', '営業時間', 'お店から一言', 'URL', '備考'],
-  container: ['集約名', 'IDs', '備考'],
-}
-const NO_STATUS_TYPES = [ 'container' ]
+import TYPES from "./types.mjs";
+
+types.innerHTML = Object.keys(TYPES).map(t => `<a href='./#type=${t}'>${TYPES[t].name_ja}</a>`).join(' / ');
+console.log(types.innerHTML);
+// <a href='./#type=facility'>施設</a> / <a href='./#type=store'>店舗</a> / <a href='./#type=container'>集約</a>
 
 let data = []
 const makeInputs = function () {
-  const names = TYPES[type]
+  const atype = TYPES[type];
+  const names = atype.atts;
   data = []
   inputs.innerHTML = ''
   lastUpdate.textContent = ''
   document.getElementById('b1_0').setFlag(false)
   document.getElementById('b1_1').setFlag(false)
-  divStatus.style.visibility = NO_STATUS_TYPES.indexOf(type) >= 0 ? 'hidden' : 'visible'
+  //divStatus.style.visibility = NO_STATUS_TYPES.indexOf(type) >= 0 ? 'hidden' : 'visible'
+  divStatus.style.display = atype.status_congrestion ? 'block' : 'none';
   
   const names2 = names.filter(n => true)
   names2.push('パスコード')
