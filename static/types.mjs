@@ -19,7 +19,7 @@ const TYPES = {
   },
   mayorcandidate: {
     name_ja: '市長候補',
-    atts: ['市長候補名', 'キャッチフレーズ', '公式サイトURL', 'Facebook', 'Twitter', 'YouTube', 'Instagram', '候補時年齢', '出身地', '職歴', '学歴'],
+    atts: ['市長候補名', 'キャッチフレーズ', '公式サイトURL', 'ブログ', 'Facebook', 'Twitter', 'YouTube', 'Instagram', '候補時年齢', '出身地', '職歴', '学歴'],
   },
 };
 
