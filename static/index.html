@@ -61,7 +61,7 @@ const makeInputs = function () {
     const inp = document.createElement('input')
     inp.type = 'text'
     inp.name = n
-    inp.maxLength = 255
+    inp.maxLength = 10000;
     inputs.appendChild(inp)
     if (n === 'パスコード') {
       inp.placeholder = '登録前は未記入でOKです'
