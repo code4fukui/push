@@ -14,8 +14,8 @@ const TYPES = {
     atts: ['集約名', 'IDs', '備考'],
   },
   company: {
-    name_ja: '企業',
-    atts: ['企業名', 'URL', '住所', 'メールアドレス', '電話番号'],
+    name_ja: "事業所",
+    atts: ["事業所名", "業種", "会社説明", "住所", "電話番号", "E-mail", "URL", "定休日", "SDGs","写真URL1","写真URL2","写真URL3"],
   },
   mayorcandidate: {
     name_ja: '市長候補',
