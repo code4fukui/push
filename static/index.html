@@ -36,6 +36,11 @@
 
 import TYPES from "./types.mjs";
 
+import { InputFile } from "https://code4sabae.github.io/js/InputFile.js";
+// import { InputFile } from "http://127.0.0.1:8080/InputFile.js";
+//const UPLOAD_URL = "http://127.0.0.1:8881/data/";
+const UPLOAD_URL = "https://img.sabae.cc/data/";
+
 types.innerHTML = Object.keys(TYPES).map(t => `<a href='./#type=${t}'>${TYPES[t].name_ja}</a>`).join(' / ');
 console.log(types.innerHTML);
 // <a href='./#type=facility'>施設</a> / <a href='./#type=store'>店舗</a> / <a href='./#type=container'>集約</a>
@@ -58,15 +63,26 @@ const makeInputs = function () {
     const div = document.createElement('div')
     div.textContent = n
     inputs.appendChild(div)
-    const inp = document.createElement('input')
-    inp.type = 'text'
-    inp.name = n
-    inp.maxLength = 10000;
-    inputs.appendChild(inp)
-    if (n === 'パスコード') {
-      inp.placeholder = '登録前は未記入でOKです'
+    if (n.startsWith("写真URL")) {
+      const inp = new InputFile(); // document.createElement('input-file') // NG
+      inp.setAttribute("name", n);
+      inp.setAttribute("accept", "image/*");
+      inp.setAttribute("uploadurl", UPLOAD_URL);
+      inp.setAttribute("maxsize", "1MB");
+      inp.setAttribute("maxwidth", 1200);
+      inputs.appendChild(inp)
+      data.push(inp)
+    } else {
+      const inp = document.createElement('input')
+      inp.type = 'text'
+      inp.name = n
+      inp.maxLength = 10000;
+      inputs.appendChild(inp)
+      if (n === 'パスコード') {
+        inp.placeholder = '登録前は未記入でOKです'
+      }
+      data.push(inp)
     }
-    data.push(inp)
   }
 }
 
@@ -185,7 +201,11 @@ const update = async () => {
   if (divStatus.style.display == 'block') {
     body.混雑状況 = getFlag()
   }
-  data.forEach(d => body[d.name] = d.value)
+  //data.forEach(d => body[d.name] = d.value)
+  data.forEach(d => {
+    // console.log(d, d.name, d.value); // getAttribute("value"));
+    body[d.name] = d.value;
+  });
   body.type = type
   console.log(body)
   //const res = await (await fetch('./', { method: 'GET', body: JSON.stringify(body) })).json()
