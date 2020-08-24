@@ -42,7 +42,7 @@ import { InputFile } from "https://code4sabae.github.io/js/InputFile.js";
 //const UPLOAD_URL = "http://127.0.0.1:8881/data/";
 const UPLOAD_URL = "https://img.sabae.cc/data/";
 
-types.innerHTML = Object.keys(TYPES).map(t => `<a href='./#type=${t}'>${TYPES[t].name_ja}</a>`).join(' / ');
+types.innerHTML = Object.keys(TYPES).filter(t => t !== "mayorcandidate").map(t => `<a href='./#type=${t}'>${TYPES[t].name_ja}</a>`).join(' / ');
 console.log(types.innerHTML);
 // <a href='./#type=facility'>施設</a> / <a href='./#type=store'>店舗</a> / <a href='./#type=container'>集約</a>
 
