@@ -73,6 +73,16 @@ const makeInputs = function () {
       inp.setAttribute("maxwidth", 1200);
       inputs.appendChild(inp)
       data.push(inp)
+    } else if (n == "日付"){
+      const inp = document.createElement('input')
+      inp.type = 'date'
+      inp.name = n
+      //  inp.maxLength = 10000;
+      inputs.appendChild(inp)
+      // if (n === 'パスコード') {
+      //   inp.placeholder = '登録前は未記入でOKです'
+      // }
+      data.push(inp)
     } else {
       const inp = document.createElement('input')
       inp.type = 'text'
@@ -82,6 +92,7 @@ const makeInputs = function () {
       if (n === 'パスコード') {
         inp.placeholder = '登録前は未記入でOKです'
       }
+    
       data.push(inp)
     }
   }
