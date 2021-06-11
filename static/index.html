@@ -23,7 +23,7 @@
       <div class=lastUpdate>更新日時：<span id=lastUpdate></span></div>
       <div id="inputs"></div>
       <input type="submit" id="btn" value="オープンデータ登録"><br>
-      <div class=opendata>オープンデータリンク：<a id=opendataLink target=_blank></a></div>
+      <div class=opendata>オープンデータリンク<br><input id=opendataLinkIn><br><a id=opendataLink target=_blank>公開URL</a></div>
     </form>
   </div>
   
@@ -182,9 +182,10 @@ const decodeID = function (pass) {
 }
 
 const showLink = function (id) {
-  const url = 'https://push.sabae.cc/' + id
-  opendataLink.textContent = opendataLink.href = url
-}
+  const url = 'https://push.sabae.cc/' + id;
+  opendataLinkIn.value = opendataLink.textContent = opendataLink.href = url;
+  btn.value = "オープンデータ更新";
+};
 
 const first = async function () {
   const hash = document.location.hash
@@ -250,14 +251,17 @@ const update = async () => {
   }
   if (res.id) {
     showLink(res.id);
-    btn.textContent = "更新";
   }
 }
 
 btn.onclick = async () => {
-  await update()
-  alert('登録しました')
-  return false
+  try {
+    await update();
+    alert(btn.value + 'しました');
+  } catch (e) {
+    alert(btn.value + 'できませんでした。ネットワークを確認しもう一度お試しください');
+  }
+  return false;
 }
 
 </script>
