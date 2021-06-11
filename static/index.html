@@ -1,6 +1,6 @@
 <!DOCTYPE html><html lang="ja">
 <head>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta name="viewport" content="width=device-width">
 <meta charset='utf-8'/>
 <title>PUSH かんたんオープンデータ</title>
 <link rel="stylesheet" type="text/css" href="push.css">
@@ -10,7 +10,7 @@
 <div id='contents'>
   <div class=header>
     <h1><a href=https://push.sabae.cc/>PUSH かんたんオープンデータ</a></h1>
-    <div class=subtitle>オープンデータ化したい項目を書いて登録するだけ！<br>
+    <div class=subtitle>オープンデータ化したい項目を書いて登録するだけです<br>
     自分だけのURLが生成され、いつでも更新できます</div>
   </div>
 
@@ -64,6 +64,9 @@ const makeInputs = function () {
     const div = document.createElement('div')
     div.textContent = n
     inputs.appendChild(div)
+    const type = atype.types[n];
+    console.log(type);
+
     if (n.startsWith("写真URL")) {
       const inp = new InputFile(); // document.createElement('input-file') // NG
       inp.setAttribute("name", n);
@@ -73,7 +76,7 @@ const makeInputs = function () {
       inp.setAttribute("maxwidth", 1200);
       inputs.appendChild(inp)
       data.push(inp)
-    } else if (n == "日付"){
+    } else if (n == "日付" || type == "date") {
       const inp = document.createElement('input')
       inp.type = 'date'
       inp.name = n
@@ -83,6 +86,16 @@ const makeInputs = function () {
       //   inp.placeholder = '登録前は未記入でOKです'
       // }
       data.push(inp)
+    } else if (Array.isArray(type)) {
+      const sel = document.createElement("select");
+      console.log(type.length);
+      for (const t of type) {
+        const opt = document.createElement("option");
+        opt.textContent = t;
+        sel.appendChild(opt);
+      }
+      inputs.appendChild(sel);
+      data.push(sel);
     } else {
       const inp = document.createElement('input')
       inp.type = 'text'
