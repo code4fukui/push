@@ -43,7 +43,7 @@ import { InputFile } from "https://code4sabae.github.io/js/InputFile.js";
 const UPLOAD_URL = "https://img.sabae.cc/data/";
 
 types.innerHTML = Object.keys(TYPES).filter(t => t !== "mayorcandidate").map(t => `<a href='./#type=${t}'>${TYPES[t].name_ja}</a>`).join(' / ');
-console.log(types.innerHTML);
+//console.log(types.innerHTML);
 // <a href='./#type=facility'>施設</a> / <a href='./#type=store'>店舗</a> / <a href='./#type=container'>集約</a>
 
 let data = []
@@ -245,9 +245,12 @@ const update = async () => {
     document.location.hash = (type !== DEFAULT_TYPE ? 'type=' + type + '&' : '') + 'admin=' + res.pass
   }
   console.log(res.lastUpdate)
-  if (res.lastUpdate) { lastUpdate.textContent = res.lastUpdate }
+  if (res.lastUpdate) {
+    lastUpdate.textContent = res.lastUpdate
+  }
   if (res.id) {
-    showLink(res.id)
+    showLink(res.id);
+    btn.textContent = "更新";
   }
 }
 

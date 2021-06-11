@@ -85,7 +85,13 @@ const getList = function () {
     if (!f.endsWith('.json')) { continue }
     const d = JSON.parse(fs.readFileSync('data/' + f, 'utf-8'))
     const id = f.substring(0, f.length - 5)
-    const name = d['施設名'] || d['店舗名'] || d['集約名']
+    let name = d['施設名'] || d['店舗名'] || d['集約名']
+    if (!name) {
+      for (const n of d) {
+        name = n;
+        break;
+      }
+    }
     res.push({ id: id, type: d.type, name: name, lastUpdate: d.lastUpdate })
   }
   // const key = d => new Date(d.lasatUpdate).getTime()
@@ -187,7 +193,9 @@ app.get('/*', (req, res) => {
       for (const id of ids) {
         try {
           const d = getDataJSON(id)
-          data.push(d)
+          if (d) {
+            data.push(d)
+          }
         } catch (e) {
         }
       }
