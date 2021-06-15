@@ -61,9 +61,11 @@ const makeInputs = function () {
   const names2 = names.filter(n => true)
   names2.push('パスコード')
   for (const n of names2) {
-    const div = document.createElement('div')
-    div.textContent = n
-    inputs.appendChild(div)
+    const desc = atype.descriptions && atype.descriptions[n];
+
+    const div = document.createElement('div');
+    div.textContent = n + (desc ? " " + desc : "");
+    inputs.appendChild(div);
     const type = atype.types && atype.types[n];
     
     if (n.startsWith("写真URL")) {
