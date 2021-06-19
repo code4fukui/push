@@ -39,6 +39,8 @@ import TYPES from "./types.mjs";
 
 import { InputFile } from "https://code4sabae.github.io/js/InputFile.js";
 // import { InputFile } from "http://127.0.0.1:8080/InputFile.js";
+import { InputDates } from "https://code4fukui.github.io/input-dates/input-dates.js";
+
 //const UPLOAD_URL = "http://127.0.0.1:8881/data/";
 const UPLOAD_URL = "https://img.sabae.cc/data/";
 
@@ -86,6 +88,11 @@ const makeInputs = function () {
       // if (n === 'パスコード') {
       //   inp.placeholder = '登録前は未記入でOKです'
       // }
+      data.push(inp)
+    } else if (type == "dates") {
+      const inp = new InputDates();
+      inp.name = n;
+      inputs.appendChild(inp);
       data.push(inp)
     } else if (Array.isArray(type)) {
       const sel = document.createElement("select");
