@@ -16,7 +16,7 @@
 
   <div class=main>
     <form action="./" method="POST" onsubmit="return false">
-      <div id="divStatus">
+      <div id="divStatus" style="display:none">
         <div>混雑状況</div>
         <div class=yn><div id=b1_0>混雑していない</div><div id=b1_1>混雑・入場規制など</div></div>
       </div>
@@ -36,11 +36,9 @@
 <script type='module'>
 
 import TYPES from "./types.mjs";
-
 import { InputFile } from "https://code4sabae.github.io/js/InputFile.js";
 // import { InputFile } from "http://127.0.0.1:8080/InputFile.js";
 import { InputDates } from "https://code4fukui.github.io/input-dates/input-dates.js";
-
 //const UPLOAD_URL = "http://127.0.0.1:8881/data/";
 const UPLOAD_URL = "https://img.sabae.cc/data/";
 
@@ -49,8 +47,47 @@ types.innerHTML = Object.keys(TYPES).filter(t => t !== "mayorcandidate").map(t =
 // <a href='./#type=facility'>施設</a> / <a href='./#type=store'>店舗</a> / <a href='./#type=container'>集約</a>
 
 let data = []
-const makeInputs = function () {
-  const atype = TYPES[type];
+const makeInputs = async () => {
+  const getType = async (type) => {
+    if (type.startsWith("http://") || type.startsWith("https://")) {
+      const d = await (await fetch(type + ".json")).json();
+      if (d.type == "generic") {
+        const res = {
+          name_ja: d["種別名"],
+          atts: [],
+          types: {},
+          descriptions: {},
+        };
+        for (let i = 1; i <= 10; i++) {
+          const val = d["項目" + i];
+          if (!val) {
+            break;
+          }
+          const ss = val.split(",");
+          if (ss.length >= 0) {
+            res.atts.push(ss[0]);
+          }
+          if (ss.length >= 1 && ss[1]) {
+            res.types[ss[0]] = ss[1];
+          }
+          if (ss.length >= 2 && ss[2]) {
+            res.descriptions[ss[0]] = ss[2];
+          }
+        }
+        return res;
+        /*
+  vaccine: {
+    name_ja: "ワクチン",
+    atts: ["医療機関名", "空き状況", "市町名", "住所", "申込先名", "申込電話番号", "申込URL", "申込期限", "備考"],
+    types: { "空き状況" : "dates", "市町名": ["福井市", "敦賀市", "小浜市", "大野市", "勝山市", "鯖江市", "あわら市", "越前市", "坂井市", "永平寺町", "池田町", "南越前町", "越前町", "美浜町", "高浜町", "おおい町", "若狭町"] },
+    descriptions: { "空き状況": "(向こう2週間以内の予約可能な日付を選択してください。選択＝青背景の日付)", "住所": "(町域以降)", "申込先名": "(医療機関名、市町コールセンター等)", "申込期限": "(3日前等)", "備考": "(かかりつけ患者のみ受付等)" },
+  },
+        */
+      }
+    }
+    return TYPES[type] || "facility";
+  };
+  const atype = await getType(type);
   const names = atype.atts;
   data = []
   inputs.innerHTML = ''
@@ -163,19 +200,20 @@ const getTypeByHash = function () {
 const showTypeByHash = function () {
   const rtype = getTypeByHash() || DEFAULT_TYPE
   if (rtype !== type) {
-    type = rtype
-    makeInputs()
+    btn.value = "オープンデータ登録";
+    type = rtype;
+    makeInputs();
   }
 }
 
 window.onhashchange = function () {
-  console.log(window.location.hash)
+  //console.log(window.location.hash)
   showTypeByHash()
 }
 
 let type = getTypeByHash() || DEFAULT_TYPE
-console.log(type)
-makeInputs()
+//console.log(type)
+// await makeInputs()
 
 //
 
@@ -204,9 +242,10 @@ const first = async function () {
     const url = './?id=' + id
     const json = await (await fetch(url)).json()
     type = json.type || 'facility'
-    makeInputs(TYPES[type])
+    await makeInputs();
+    
     for (const name in json) {
-      console.log(name, json[name])
+      //console.log(name, json[name])
       const inp = data.find(d => d.name == name)
       if (inp) {
         inp.value = json[name]
@@ -223,8 +262,13 @@ const first = async function () {
       }
     }
     data[data.length - 1].value = pass
-    if (json.lastUpdate) { lastUpdate.textContent = json.lastUpdate }
+    if (json.lastUpdate) {
+      lastUpdate.textContent = json.lastUpdate
+    }
+    
     showLink(id)
+  } else {
+    await makeInputs();
   }
 }
 first()
@@ -243,18 +287,18 @@ const update = async () => {
   console.log(body)
   //const res = await (await fetch('./', { method: 'GET', body: JSON.stringify(body) })).json()
   const sjson = JSON.stringify(body)
-  console.log(sjson)
+  //console.log(sjson)
   const url = './?data=' + encodeURIComponent(sjson)
-  console.log(url)
+  //console.log(url)
   const res = await (await fetch(url)).json()
   console.log(res)
   if (res.pass) {
-    console.log(res.pass)
+    //console.log(res.pass)
     data[data.length - 1].value = res.pass
-    console.log(data[data.length - 1].value)
+    //console.log(data[data.length - 1].value)
     document.location.hash = (type !== DEFAULT_TYPE ? 'type=' + type + '&' : '') + 'admin=' + res.pass
   }
-  console.log(res.lastUpdate)
+  //console.log(res.lastUpdate)
   if (res.lastUpdate) {
     lastUpdate.textContent = res.lastUpdate
   }
@@ -265,8 +309,9 @@ const update = async () => {
 
 btn.onclick = async () => {
   try {
+    const lbl = btn.value;
     await update();
-    alert(btn.value + 'しました');
+    alert(lbl + 'しました');
   } catch (e) {
     alert(btn.value + 'できませんでした。ネットワークを確認しもう一度お試しください');
   }
