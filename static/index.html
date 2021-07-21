@@ -39,6 +39,7 @@ import TYPES from "./types.mjs";
 import { InputFile } from "https://code4sabae.github.io/js/InputFile.js";
 // import { InputFile } from "http://127.0.0.1:8080/InputFile.js";
 import { InputDates } from "https://code4fukui.github.io/input-dates/input-dates.js";
+import { InputTable } from "https://code4fukui.github.io/input-table/input-table.js";
 //const UPLOAD_URL = "http://127.0.0.1:8881/data/";
 const UPLOAD_URL = "https://img.sabae.cc/data/";
 
@@ -130,7 +131,13 @@ const makeInputs = async () => {
       const inp = new InputDates();
       inp.name = n;
       inputs.appendChild(inp);
-      data.push(inp)
+      data.push(inp);
+    } else if (type == "table") {
+      const inp = new InputTable();
+      inp.name = n;
+      inp.setAttribute("maxlength", 1024 * 1024); // limit 1Mbyte
+      inputs.appendChild(inp);
+      data.push(inp);
     } else if (Array.isArray(type)) {
       const sel = document.createElement("select");
       for (const t of type) {
