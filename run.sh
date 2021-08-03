@@ -1,5 +1,5 @@
 while :
 do
-  node push.mjs
+  deno run -A --unstable push.js
 done
 

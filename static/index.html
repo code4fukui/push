@@ -40,6 +40,7 @@ import { InputFile } from "https://code4sabae.github.io/js/InputFile.js";
 // import { InputFile } from "http://127.0.0.1:8080/InputFile.js";
 import { InputDates } from "https://code4fukui.github.io/input-dates/input-dates.js";
 import { InputTable } from "https://code4fukui.github.io/input-table/input-table.js";
+import { fetchJSON } from "https://js.sabae.cc/fetchJSON.js";
 //const UPLOAD_URL = "http://127.0.0.1:8881/data/";
 const UPLOAD_URL = "https://img.sabae.cc/data/";
 
@@ -246,7 +247,8 @@ const first = async function () {
   if (hash.length > 1 && hash.indexOf('admin=') >= 0) {
     const pass = hash.match(/admin=([\d-]+)/)[1]
     const id = decodeID(pass)
-    const url = './?id=' + id
+    //const url = './?id=' + id
+    const url = './' + id + ".json";
     const json = await (await fetch(url)).json()
     type = json.type || 'facility'
     await makeInputs();
@@ -293,11 +295,12 @@ const update = async () => {
   body.type = type
   console.log(body)
   //const res = await (await fetch('./', { method: 'GET', body: JSON.stringify(body) })).json()
-  const sjson = JSON.stringify(body)
+  //const sjson = JSON.stringify(body)
   //console.log(sjson)
-  const url = './?data=' + encodeURIComponent(sjson)
+  //const url = './?data=' + encodeURIComponent(sjson)
   //console.log(url)
-  const res = await (await fetch(url)).json()
+  //const res = await (await fetch(url)).json()
+  const res = await fetchJSON("/api/", body);
   console.log(res)
   if (res.pass) {
     //console.log(res.pass)

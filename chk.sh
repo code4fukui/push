@@ -1,1 +1,1 @@
-ps -fu root | grep node
+ps -fu root | grep deno
