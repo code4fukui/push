@@ -1,1 +1,1 @@
-nohup sh run.sh &
+nohup sh run_push.sh &
