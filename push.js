@@ -129,7 +129,7 @@ const getPageByID = (url) => {
   if (!(idx > 0)) {
     return null;
   }
-  let n = url.lastIndexOf('.')
+  let n = url.indexOf('.')
   const ext = n < 0 ? 'html' : url.substring(n + 1)
   // console.log(idx, url, ext)
   n = n < 0 ? n.length : n
@@ -172,6 +172,14 @@ const getPageByID = (url) => {
     template = template.replace(/\${id}/g, ids2)
     template = template.replace(/\${data}/g, sdata)
     return { headers, body: template };
+  } else if (ext == "raw.json") {
+    const id = ids[0];
+    const d = getDataJSON(id);
+    const headers = {
+      'Access-Control-Allow-Origin': '*',
+      'Content-Type': 'application/json; charset=utf-8',
+    };
+    return { headers, body: JSON.stringify(d) };
   }
 
   const dataids = []

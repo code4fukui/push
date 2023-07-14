@@ -248,7 +248,7 @@ const first = async function () {
     const pass = hash.match(/admin=([\d-]+)/)[1]
     const id = decodeID(pass)
     //const url = './?id=' + id
-    const url = './' + id + ".json";
+    const url = './' + id + ".raw.json";
     const json = await (await fetch(url)).json()
     type = json.type || 'facility'
     await makeInputs();
